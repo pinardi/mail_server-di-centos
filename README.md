@@ -1,32 +1,26 @@
-# mail_server-di-centos
+# Mail Server Centos
+Mail Server Centos
+## Mail Server Centos inside xenserver
 
 
 ## Setting Hostname
 Ganti hostname server anda menjadi mail.[NAMADOMAIN].com
 
-'''bash
+```bash
 hostnamectl --static set-hostname mailxen.minion.com
-'''
+```
 
 Hapus Mail Server Lain
 Hapus exim dan sendmail
-
+```bash
 yum remove exim* sendmail*
+```
 Install MariaDB
 Install MariaDB dengan perintah
 Setting Hostname
-Ganti hostname server anda menjadi mail.[NAMADOMAIN].com
 
-hostnamectl --static set-hostname mail.jaranguda.com
-Hapus Mail Server Lain
-Hapus exim dan sendmail
-
-yum remove exim* sendmail*
-Install MariaDB
-Install MariaDB dengan perintah
-
-buat database dan user untuk mail.
-
+## database and user untuk mail.
+```bash
 create database email;
 GRANT ALL PRIVILEGES ON email.* TO "dbmail"@"localhost" IDENTIFIED BY "sFRjKXVkUef3VHxTXiLT";
 Buat tabel di database
@@ -34,14 +28,16 @@ CREATE TABLE domains (domain varchar(50) NOT NULL, PRIMARY KEY (domain) );
 CREATE TABLE forwardings (source varchar(80) NOT NULL, destination TEXT NOT NULL, PRIMARY KEY (source) );
 CREATE TABLE users (email varchar(80) NOT NULL, password varchar(20) NOT NULL, PRIMARY KEY (email) );
 CREATE TABLE transport ( domain varchar(128) NOT NULL default '', transport varchar(128) NOT NULL default '', UNIQUE KEY domain (domain) );
-Generate SSL Self Signed
+```
+## Generate SSL Self Signed
 Untuk sementara kita akan menggunakan self signed SSL, nantinya bisa diganti dengan SSL berbayar atau Lets Encrypt
-
+```bash
 mkdir /etc/postfix/ssl;
 cd /etc/postfix/ssl;
 openssl req -x509 -nodes -newkey rsa:2048 -keyout mail.xxx.com.key -out mail.xxx.com.crt -nodes -days 3650
-output perintah diatas
-
+```
+## output perintah diatas
+```bash
 $ openssl req -x509 -nodes -newkey rsa:2048 -keyout mail.xxx.com.key -out mail.indounix.com.crt -nodes -days 3650
 Generating a 2048 bit RSA private key
 .............................................................................................+++
@@ -65,19 +61,23 @@ Email Address []:t@linux.com
 [root@mail.xxx.com] /etc/postfix/ssl 
 $ ls
 mail.xxx.com.crt  mail.xxx.com.key
+```
+
 Install dan Konfigurasi Postfix
 Install postfix
-
+```bash
 yum -y --enablerepo=centosplus install postfix
+```
 Database Mail
 Buat 4 file dibawah ini
 /etc/postfix/mysql-virtual_domains.cf
-
+```bash
 user = dbmail
 password = sFRjKXVkUef3VHxTXiLT
 dbname = email
 query = SELECT domain AS virtual FROM domains WHERE domain='%s'
 hosts = 127.0.0.1
+```
 /etc/postfix/mysql-virtual_email2email.cf
 
 user = dbmail
